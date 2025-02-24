@@ -116,6 +116,11 @@ async def handle_call(caller_number: str, audio: UploadFile = File(...)):
         "tts_audio": tts_audio_base64,  # JSON-compatible audio
     }
     return response_data
+    
+# Root Endpoint
+@app.get("/")
+async def read_root():
+    return {"message": "Welcome to the AI Spam Blocker API. Use /handle-call/ for voice calls and /handle-sms/ for SMS."}
 
 
 @app.post("/handle-sms/")
