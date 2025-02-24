@@ -1,0 +1,8 @@
+fastapi 
+uvicorn 
+pymongo 
+groq 
+cartesia 
+python-dotenv
+python-multipart
+ffmpeg
