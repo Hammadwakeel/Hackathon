@@ -1,0 +1,73 @@
+AI Spam Blocker Prototype
+
+This project is a prototype for an AI-powered spam blocker that uses cloud-based services for real-time speech-to-text (STT), a large language model (LLM) for generating human-like responses, and text-to-speech (TTS) to convert responses back to audio. It also simulates spam call and SMS handling and logs conversation history in MongoDB.
+Features
+
+    Real-Time Speech-to-Text: Transcribes audio using Groq Whisper v3.
+    AI Bot Response: Generates context-aware replies using Groq LLaMA 3.3 70B.
+    Text-to-Speech Conversion: Converts AI responses to speech via Cartesia TTS.
+    Chat History: Maintains conversation history in MongoDB and passes it to the LLM.
+    Simulated SMS Handling: Processes spam SMS messages and stores conversation.
+    Frontend UI: A Streamlit interface to simulate calls/SMS and view conversation logs.
+
+Setup and Installation
+1. Clone the Repository
+
+git clone https://github.com/Hammadwakeel/Hackathon.git
+cd Hackathon
+
+2. Create a Virtual Environment
+On Linux/macOS:
+
+python3 -m venv venv
+source venv/bin/activate
+
+On Windows:
+
+python -m venv venv
+venv\Scripts\activate
+
+3. Install Dependencies
+
+Ensure you have a requirements.txt file in your project root. Then run:
+
+pip install -r requirements.txt
+
+4. Set Up Environment Variables
+
+Create a .env file in the root of your project and add your keys and URIs:
+
+MONGODB_URI=your_mongodb_connection_string
+GROQ_API_KEY=your_groq_api_key
+CARTESIA_API_KEY=your_cartesia_api_key
+
+Running the Project
+Start the Backend (FastAPI)
+
+In a terminal, run:
+
+uvicorn main:app --reload
+
+This starts your FastAPI backend on http://127.0.0.1:8000.
+Start the Frontend (Streamlit)
+
+In another terminal, run:
+
+streamlit run app.py
+
+This launches the Streamlit UI for simulating spam calls/SMS and viewing conversation logs.
+Usage
+
+    Simulate Call: Upload an audio file to mimic a spam call, which will be processed by the backend. The STT output, AI response, and TTS audio are displayed on the UI.
+    Simulate SMS: Input a spam SMS message to see the AI bot's response.
+    View Logs: Retrieve conversation history from MongoDB based on caller number.
+
+Troubleshooting
+
+    Environment Variables: Ensure your .env file is correctly set up.
+    MongoDB Connection: Verify that your MONGODB_URI is accessible.
+    Audio Processing: If you encounter issues with TTS audio playback, ensure that the TTS service is correctly returning Base64 encoded audio.
+
+License
+
+This project is confidential and intended solely for hackathon evaluation purposes.
