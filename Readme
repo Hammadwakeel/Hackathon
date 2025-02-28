@@ -1,73 +1,266 @@
-AI Spam Blocker Prototype
+# AI Spam Blocker API
 
-This project is a prototype for an AI-powered spam blocker that uses cloud-based services for real-time speech-to-text (STT), a large language model (LLM) for generating human-like responses, and text-to-speech (TTS) to convert responses back to audio. It also simulates spam call and SMS handling and logs conversation history in MongoDB.
-Features
+The AI Spam Blocker API is a FastAPI-based service designed to handle and process incoming messages and voice calls. It integrates with MongoDB for data storage and leverages external services such as Groq (for speech-to-text), Cartesia (for text-to-speech), and OpenAI's GPT-based LLM for conversation simulation and spam classification.
 
-    Real-Time Speech-to-Text: Transcribes audio using Groq Whisper v3.
-    AI Bot Response: Generates context-aware replies using Groq LLaMA 3.3 70B.
-    Text-to-Speech Conversion: Converts AI responses to speech via Cartesia TTS.
-    Chat History: Maintains conversation history in MongoDB and passes it to the LLM.
-    Simulated SMS Handling: Processes spam SMS messages and stores conversation.
-    Frontend UI: A Streamlit interface to simulate calls/SMS and view conversation logs.
+---
 
-Setup and Installation
-1. Clone the Repository
+## Table of Contents
 
-git clone https://github.com/Hammadwakeel/Hackathon.git
-cd Hackathon
+- [Overview](#overview)
+- [Features](#features)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Running the Application](#running-the-application)
+- [API Endpoints](#api-endpoints)
+- [Usage Examples](#usage-examples)
+- [Contributing](#contributing)
+- [Contact](#contact)
 
-2. Create a Virtual Environment
-On Linux/macOS:
+---
 
-python3 -m venv venv
-source venv/bin/activate
+## Overview
 
-On Windows:
+This API offers a robust system for managing contacts, processing incoming text messages, simulating conversations, and handling voice calls through audio transcription (STT) and text-to-speech (TTS) conversion. Key functionalities include:
 
-python -m venv venv
-venv\Scripts\activate
+- **Spam Classification:** Determines whether a message is spam or unknown.
+- **Conversation Simulation:** Uses an LLM to simulate multi-turn text and call conversations.
+- **Voice Call Processing:** Transcribes audio messages and converts LLM replies into speech.
+- **Contact Management:** Create, retrieve, and manage contact information via MongoDB.
 
-3. Install Dependencies
+---
 
-Ensure you have a requirements.txt file in your project root. Then run:
+## Features
 
-pip install -r requirements.txt
+- **Contacts Management:** Create, list, and retrieve contacts.
+- **Incoming Message Handling:** Classify and process incoming text messages.
+- **Chat History:** Maintain a conversation log for each caller.
+- **Call Forwarding Setup:** Configure call forwarding with a predefined number.
+- **Voice Call Processing:** Handle voice calls by transcribing audio and simulating responses.
+- **Direct Service Endpoints:** Standalone endpoints for STT, TTS, and LLM interactions.
 
-4. Set Up Environment Variables
+---
 
-Create a .env file in the root of your project and add your keys and URIs:
+## Installation
 
-MONGODB_URI=your_mongodb_connection_string
-GROQ_API_KEY=your_groq_api_key
-CARTESIA_API_KEY=your_cartesia_api_key
+1. **Clone the Repository:**
 
-Running the Project
-Start the Backend (FastAPI)
+   ```bash
+   git clone https://github.com/Hammadwakeel/Hackathon.git
+   cd Hackathon
 
-In a terminal, run:
+   ```
 
-uvicorn main:app --reload
+2. **Create and Activate a Virtual Environment:**
 
-This starts your FastAPI backend on http://127.0.0.1:8000.
-Start the Frontend (Streamlit)
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows use: venv\Scripts\activate
+   ```
 
-In another terminal, run:
+3. **Install the Dependencies:**
 
-streamlit run app.py
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-This launches the Streamlit UI for simulating spam calls/SMS and viewing conversation logs.
-Usage
+   > *Ensure that the following packages (among others) are installed: FastAPI, uvicorn, pymongo, python-dotenv, langchain_openai, cartesia, groq.*
 
-    Simulate Call: Upload an audio file to mimic a spam call, which will be processed by the backend. The STT output, AI response, and TTS audio are displayed on the UI.
-    Simulate SMS: Input a spam SMS message to see the AI bot's response.
-    View Logs: Retrieve conversation history from MongoDB based on caller number.
+---
 
-Troubleshooting
+## Configuration
 
-    Environment Variables: Ensure your .env file is correctly set up.
-    MongoDB Connection: Verify that your MONGODB_URI is accessible.
-    Audio Processing: If you encounter issues with TTS audio playback, ensure that the TTS service is correctly returning Base64 encoded audio.
+1. **Environment Variables:**
 
-License
+   Create a `.env` file in the root directory and add the following variables:
 
-This project is confidential and intended solely for hackathon evaluation purposes.
+   ```env
+   GROQ_API_KEY=your_groq_api_key
+   CARTESIA_API_KEY=your_cartesia_api_key
+   OPENAI_API_KEY=your_openai_api_key
+   MONGO_USER=your_mongodb_username
+   MONGO_PASSWORD=your_mongodb_password
+   MONGO_CLUSTER=your_mongodb_cluster
+   ```
+
+2. **MongoDB Setup:**
+
+   Ensure your MongoDB Atlas cluster (or other MongoDB instance) is properly configured and accessible using the provided credentials.
+
+---
+
+## Running the Application
+
+Start the API server using Uvicorn:
+
+```bash
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+- **Base URL:** `http://localhost:8000/`
+- **API Documentation:** Visit `http://localhost:8000/docs` for interactive API docs generated by FastAPI.
+
+---
+
+## API Endpoints
+
+### Root Endpoint
+
+- **GET /**  
+  **Description:** Welcome endpoint.  
+  **Response:** JSON message with a welcome note.
+
+### Contacts Management
+
+- **POST /contacts**  
+  **Description:** Create new contacts.  
+  **Payload:** A JSON array of contact objects:
+  
+  ```json
+  [
+    {
+      "phone": "+1234567890",
+      "name": "John Doe",
+      "email": "john.doe@example.com"
+    }
+  ]
+  ```
+  **Response:** List of created contacts.
+
+- **GET /contacts**  
+  **Description:** Retrieve all contacts.  
+  **Response:** A list of contacts stored in the database.
+
+- **GET /contacts/{phone}**  
+  **Description:** Retrieve contact details by phone number.  
+  **Response:** Contact details for the specified phone.
+
+### Incoming Message Processing
+
+- **POST /incoming-message**  
+  **Description:** Process an incoming message.
+  - Saves the message in the chat history.
+  - Checks if the phone number exists in contacts.
+  - Classifies the message as "spam" or "unknown" using the LLM.
+  - If unknown, simulates a multi-turn conversation.
+  
+  **Payload Example:**
+
+  ```json
+  {
+    "phone": "+1234567890",
+    "message": "Hello, can we chat?"
+  }
+  ```
+  **Response:** JSON with status and conversation details.
+
+### Chat History
+
+- **GET /messages/{caller_number}**  
+  **Description:** Retrieve the conversation history for a specific caller.  
+  **Response:** JSON object containing the caller number and an array of messages.
+
+### Call Forwarding
+
+- **POST /setup-call-forwarding**  
+  **Description:** Set up call forwarding to a predetermined number.  
+  **Response:** Success message indicating the new forwarding number.
+
+### Voice Call Processing
+
+- **POST /process-call**  
+  **Description:** Process a voice call with the following steps:
+  - If the caller exists in contacts, respond with a ringing message.
+  - Otherwise, read and transcribe the audio.
+  - Update chat history and simulate a conversation.
+  - Convert the simulated reply to audio (TTS).
+  
+  **Payload:** Form data containing:
+  - `caller_number` (string)
+  - `audio` (audio file)
+  
+  **Response:** Confirmation of successful processing.
+
+- **GET /audio-reply/{caller_number}**  
+  **Description:** Retrieve the audio reply for a given caller.
+  **Response:** JSON with:
+  - The latest STT response.
+  - The LLM reply.
+  - The audio reply (Base64 encoded).
+
+### Direct Service Endpoints
+
+- **POST /stt**  
+  **Description:** Convert an uploaded audio file to text (Speech-to-Text).  
+  **Payload:** Audio file.  
+  **Response:** Transcribed text.
+
+- **POST /tts**  
+  **Description:** Convert provided text to an audio file (Text-to-Speech).  
+  **Payload:** JSON with a `text` field.
+  
+  **Response:** Audio file encoded in Base64.
+
+- **POST /llm**  
+  **Description:** Process a message with the LLM and get a simulated reply.  
+  **Payload:** JSON with a `message` field.  
+  **Response:** LLM-generated reply.
+
+---
+
+## Usage Examples
+
+### Creating Contacts
+
+```bash
+curl -X POST "http://localhost:8000/contacts" \
+  -H "Content-Type: application/json" \
+  -d '[{"phone": "+1234567890", "name": "John Doe", "email": "john.doe@example.com"}]'
+```
+
+### Processing an Incoming Message
+
+```bash
+curl -X POST "http://localhost:8000/incoming-message" \
+  -H "Content-Type: application/json" \
+  -d '{"phone": "+1234567890", "message": "Hello, can we chat?"}'
+```
+
+### Transcribing Audio (STT)
+
+```bash
+curl -X POST "http://localhost:8000/stt" \
+  -F "audio=@path_to_your_audio_file.m4a"
+```
+
+### Converting Text to Speech (TTS)
+
+```bash
+curl -X POST "http://localhost:8000/tts" \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Hello, this is a test."}'
+```
+
+### Interacting with the LLM
+
+```bash
+curl -X POST "http://localhost:8000/llm" \
+  -H "Content-Type: application/json" \
+  -d '{"message": "How are you today?"}'
+```
+
+---
+
+
+## Contributing
+
+Contributions are welcome! If you have suggestions, improvements, or bug fixes, please open an issue or submit a pull request.
+
+---
+
+## Contact
+
+For questions or support, please contact Hammad Wakeel at hammadshah71200@gmail.com.
+
+---
+
+This README provides an overview and detailed instructions for setting up and using the AI Spam Blocker API. Adjust the configuration details and links as necessary for your project environment and external service documentation. Enjoy building with the API!
