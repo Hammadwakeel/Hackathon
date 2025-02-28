@@ -1,8 +1,9 @@
 fastapi 
 uvicorn 
 pymongo 
-groq 
-cartesia 
 python-dotenv
 python-multipart
-ffmpeg
+twilio 
+websockets 
+openai
+langchain_openai
